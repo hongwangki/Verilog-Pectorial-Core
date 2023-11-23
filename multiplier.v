@@ -32,8 +32,8 @@ module  multiplier(
 	begin
 		 if(!reset_n) state <= IDLE;
 		 else begin
-			  if(op_clear) state <= IDLE;//op_clear==1 => state= IDEL
-			  else state  <= next;
+			if(op_clear) state <= IDLE;//op_clear==1 => state= IDEL
+			else state  <= next;
 		 end
 	end
 ////////////next state///////////////
@@ -42,23 +42,23 @@ module  multiplier(
 		case(state) 
 			  //IDLE Next State Condition
 			  IDLE : begin
-							  if(reset_n && op_start && !op_clear) next = OP_START;
-							  else next = IDLE;
-						end
+				if(reset_n && op_start && !op_clear) next = OP_START;
+			     else next = IDLE;
+				end
 			  //OP_START Next State Condition
 			  OP_START : next = JUDGE;
 			  //JUDGE Next State Condition
-			  JUDGE    : begin 
-											if(REG_result[1]^REG_result[0]) next = ADD;
-											else next = SHIFT;
-							 end
+			  JUDGE : begin 
+				if(REG_result[1]^REG_result[0]) next = ADD;
+				else next = SHIFT;
+				end
 			  //ADD Next State Condition
 			  ADD :  next = SHIFT;
 			  //SHIFT Next State Condition
 			  SHIFT    : begin
-									if(counter == 64'b1) next = DONE;
-									else next = JUDGE;
-							 end
+				f(counter == 64'b1) next = DONE;
+				else next = JUDGE;
+				end
 			  //DONE Next State Condition			 
 			  DONE : next = IDLE;
 		endcase 
@@ -70,16 +70,16 @@ module  multiplier(
 		if(!reset_n) REG_result  <= 129'b0;
 		//State-based result definition
 		else begin
-			  if(op_clear) REG_result  <= 129'b0;
-			  //64b'0 connect 64b multiplier connect 1'b0 =129b result
-			  else if(state == OP_START) REG_result  <= { 64'b0,  multiplier, 1'b0 };
-			  //1bit right shift 
-			  else if(state == SHIFT) REG_result  <= {REG_result[128], REG_result[128:1] }; 
-			  // sub cla result[128:65] connect REG reuslt [64:0]
-			  else if(state == ADD && (REG_result[0]==1'b0)) REG_result  <= {w_sub, REG_result[64:0]};
-			  //ADD cla result[128:65] connect REG reuslt [64:0] 
-			  else if(state == ADD && (REG_result[0]==1'b1)) REG_result  <= {w_add, REG_result[64:0]};
-			  else REG_result <= REG_result;
+			if(op_clear) REG_result  <= 129'b0;
+			//64b'0 connect 64b multiplier connect 1'b0 =129b result
+			else if(state == OP_START) REG_result  <= { 64'b0,  multiplier, 1'b0 };
+			//1bit right shift 
+			else if(state == SHIFT) REG_result  <= {REG_result[128], REG_result[128:1] }; 
+			// sub cla result[128:65] connect REG reuslt [64:0]
+			else if(state == ADD && (REG_result[0]==1'b0)) REG_result  <= {w_sub, REG_result[64:0]};
+			//ADD cla result[128:65] connect REG reuslt [64:0] 
+			else if(state == ADD && (REG_result[0]==1'b1)) REG_result  <= {w_add, REG_result[64:0]};
+			else REG_result <= REG_result;
 		end
 	end
  
@@ -88,9 +88,9 @@ module  multiplier(
 	begin
 		if(!reset_n) REG_multiplier <= 64'b0;
 		else begin
-			  if(op_clear) REG_multiplier  <= 64'b0; //multiplier clear
-			  else if(state == OP_START) REG_multiplier  <= multiplier;
-			  else REG_multiplier  <= REG_multiplier;
+			if(op_clear) REG_multiplier  <= 64'b0; //multiplier clear
+			else if(state == OP_START) REG_multiplier  <= multiplier;
+			else REG_multiplier  <= REG_multiplier;
 		end
 	end
 
@@ -99,9 +99,9 @@ module  multiplier(
 	begin
 		if(!reset_n) REG_multiplicand  <= 64'b0;
 		else begin
-			  if(op_clear) REG_multiplicand  <= 64'b0; //multiplicand clear
-			  else if(state == OP_START) REG_multiplicand  <= multiplicand;
-			  else REG_multiplicand  <= REG_multiplicand;
+			if(op_clear) REG_multiplicand  <= 64'b0; //multiplicand clear
+			else if(state == OP_START) REG_multiplicand  <= multiplicand;
+			else REG_multiplicand  <= REG_multiplicand;
 		end
 	end
  
@@ -110,9 +110,9 @@ module  multiplier(
 	begin
 		 if(!reset_n) counter <= 64'h8000_0000_0000_0000;
 		 else begin
-			  if(op_clear) counter <= 64'h8000_0000_0000_0000;
-			  else if(state == SHIFT) counter <= {1'b0, counter[63:1]};
-			  else counter <= counter;
+			if(op_clear) counter <= 64'h8000_0000_0000_0000;
+			else if(state == SHIFT) counter <= {1'b0, counter[63:1]};
+			else counter <= counter;
 		 end
 	end
 	
