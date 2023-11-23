@@ -30,25 +30,25 @@ module BUS (
 	begin
 		if (~reset_n) next_state  = IDEL; //reset= 0
 		 else begin
-			  case (state)
-					//IDEL next state define
-					IDEL : begin
-						 if (m_req) begin
-							  next_state = READY;
-						 end
-						 else begin
-							  next_state = IDEL;
-						 end
+			case (state)
+				//IDEL next state define
+				IDEL : begin
+					if (m_req) begin
+						next_state = READY;
+				    end
+					else begin
+						next_state = IDEL;
 					end
-					//READY next state define
-					READY : next_state = DEFI;
-					//DEFI next state define
-					DEFI : begin
-						 if (END) next_state = IDEL;
-						 else next_state = DEFI;
-					end
-					//default
-					default : next_state = IDEL;
+				end
+				//READY next state define
+				READY : next_state = DEFI;
+				//DEFI next state define
+				DEFI : begin
+					 if (END) next_state = IDEL;
+					 else next_state = DEFI;
+				end
+				//default
+				default : next_state = IDEL;
 			  endcase
 		 end
 	end
