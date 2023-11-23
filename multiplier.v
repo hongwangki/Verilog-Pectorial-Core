@@ -6,7 +6,12 @@ module  multiplier(
     output [127:0] result
 );
 	//state define
-	parameter IDLE = 3'b000, OP_START = 3'b001, JUDGE = 3'b010, ADD = 3'b011, SHIFT = 3'b100, DONE = 3'b101;
+	parameter IDLE = 3'b000;
+	parameter OP_START = 3'b001;
+	parameter JUDGE = 3'b010;
+	parameter ADD = 3'b011;
+	parameter SHIFT = 3'b100;
+	parameter DONE = 3'b101;
 	
 	//reg type
 	reg [2:0] state, next;
