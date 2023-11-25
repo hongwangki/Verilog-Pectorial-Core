@@ -10,50 +10,37 @@ module BUS (
     output [63:0] s_din
 );
     //parameter define
-	parameter IDEL = 2'b00;
-	parameter READY = 2'b01;
-	parameter DEFI= 2'b10;
+   parameter IDEL = 2'b00;
+   parameter READY = 2'b01;
+   parameter DEFI= 2'b10;
 
     //reg type
-	reg [1:0] state, next_state;
-	reg END;
-	reg s_END;//END set Signal
+   reg [1:0] state, next_state;
+   reg END;
+   reg s_END;//END set Signal
 
 
-	always @(posedge clk, negedge reset_n)
-	begin
-		 if(~reset_n) state <= IDEL;
-		 else state <= next_state;
-	end
+   always @(posedge clk, negedge reset_n)
+   begin
+       if(~reset_n) state <= IDEL;
+       else state <= next_state;
+   end
 //////////////next state//////////////
-	always @(*)
-	begin
-		if (~reset_n) next_state  = IDEL; //reset= 0
-		 else begin
-			case (state)
-				//IDEL next state define
-				IDEL : begin
-					if (m_req) begin
-						next_state = READY;
-				    end
-					else begin
-						next_state = IDEL;
-					end
-				end
-				//READY next state define
-				READY : next_state = DEFI;
-				//DEFI next state define
-				DEFI : begin
-					 if (END) next_state = IDEL;
-					 else next_state = DEFI;
-				end
-				//default
-				default : next_state = IDEL;
-			  endcase
-		 end
-	end
+ // Next state logic
+   always @(*)
+   begin
+      if (~reset_n) next_state = IDEL; // reset = 0
+      else begin
+         case (state)
+            IDEL : next_state = m_req ? READY : IDEL;
+            READY : next_state = DEFI;
+            DEFI : next_state = (END) ? IDEL : DEFI;
+            default : next_state = IDEL;
+         endcase
+      end
+   end
 
-//////////os///////////	
+//////////os///////////   
 always @(posedge clk, negedge reset_n)
 begin
     if(!reset_n) begin //reset= 0 case
@@ -65,7 +52,7 @@ begin
     end
     else begin
         case (state)
-				//IDEL state output define
+            //IDEL state output define
             IDEL :  begin
                 m_grant <= 1'b0;
                 END <= 1'b0;
@@ -73,19 +60,19 @@ begin
                 s0_sel <= 1'b0;
                 s1_sel <= 1'b0;
             end
-				//READY state output define
+            //READY state output define
             READY:
                 m_grant <= 1'b1;
             //DEFI state output define
-				DEFI : begin
+            DEFI : begin
                 s_END <= s_END + 1'd1;
-					 //s0 or s1 select define
+                //s0 or s1 select define
                 if ((m_addr>=16'h0000)&&(m_addr<=16'h07ff)) begin 
                     s0_sel  <= 1'b1;
                     s1_sel  <= 1'b0;
                 end
                 else if((m_addr>=16'h7000)&&(m_addr<=16'h71ff)) begin
-					s0_sel  <= 1'b0;
+               s0_sel  <= 1'b0;
                     s1_sel  <= 1'b1;
 
                 end
@@ -112,22 +99,22 @@ begin
     end
 end
 ////////////// s0, s1 dout define///////////////
-	always @(*)
-	begin
-		//s0 sel set case
-		if(s0_sel==1'b1 && s1_sel==1'b0)
-			m_din=s0_dout;
-		else begin
-		//s1 sel set case
-			if(s0_sel==1'b0 && s1_sel==1'b1)
-			m_din= s1_dout;
-			else m_din = 64'b0;
-		end
-	end
-	
-	//assign
-	assign s_addr = m_addr;
-	assign s_din = m_dout;
-	assign s_wr = m_wr;
-	
+   always @(*)
+   begin
+      //s0 sel set case
+      if(s0_sel==1'b1 && s1_sel==1'b0)
+         m_din=s0_dout;
+      else begin
+      //s1 sel set case
+         if(s0_sel==1'b0 && s1_sel==1'b1)
+         m_din= s1_dout;
+         else m_din = 64'b0;
+      end
+   end
+   
+   //assign
+   assign s_addr = m_addr;
+   assign s_din = m_dout;
+   assign s_wr = m_wr;
+   
 endmodule
