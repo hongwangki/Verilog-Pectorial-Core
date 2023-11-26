@@ -9,12 +9,12 @@ module BUS (
     output s_wr,
     output [63:0] s_din
 );
-    //parameter define
+    ///////parameter///////
    parameter IDEL = 2'b00;
    parameter READY = 2'b01;
    parameter DEFI= 2'b10;
 
-    //reg type
+    /////////reg type//////
    reg [1:0] state, next_state;
    reg END;
    reg s_END;//END set Signal
@@ -26,14 +26,15 @@ module BUS (
        else state <= next_state;
    end
 //////////////next state//////////////
- // Next state logic
    always @(*)
    begin
       if (~reset_n) next_state = IDEL; // reset = 0
       else begin
          case (state)
+            //mreq==1 => READY else IDEL
             IDEL : next_state = m_req ? READY : IDEL;
             READY : next_state = DEFI;
+            //END==1 => IDEL else DEFI
             DEFI : next_state = (END) ? IDEL : DEFI;
             default : next_state = IDEL;
          endcase
@@ -112,7 +113,7 @@ end
       end
    end
    
-   //assign
+   /////////assign/////////
    assign s_addr = m_addr;
    assign s_din = m_dout;
    assign s_wr = m_wr;

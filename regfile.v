@@ -9,7 +9,7 @@ module regfile (
     output reg [63:0] s_dout,
     output [63:0] out_operand
 );
-   //parameter
+   ////////parameter///////
    parameter OPSTART = 16'h7000;
    parameter OPCLEAR = 16'h7008;
    parameter OPDONE = 16'h7010;
@@ -18,11 +18,13 @@ module regfile (
    parameter RESULT_H = 16'h7028;
    parameter RESULT_L = 16'h7030;
    
-   //reg type
+   /////////reg type///////
    reg [63:0] opstart, opclear, intrEn, operand;
-   //wire type
+   
+   ////////wire type///////
    wire we, re;
 
+   ///////////Defined by State////////////
    always @(posedge clk or negedge reset_n) begin
     //reset==0
     if(~reset_n) begin
@@ -65,7 +67,7 @@ module regfile (
 end
     end
 
-   //assign
+   ///////////assign//////////
    assign out_opstart = opstart[0];
    assign out_opclear = opclear[0];
    assign out_intrEn  = intrEn[0];

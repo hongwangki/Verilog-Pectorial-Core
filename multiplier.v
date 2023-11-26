@@ -5,7 +5,7 @@ module  multiplier(
     output op_done,
     output [127:0] result
 );
-	//state define
+	/////////parameter///////
 	parameter IDLE = 3'b000;
 	parameter OP_START = 3'b001;
 	parameter JUDGE = 3'b010;
@@ -13,21 +13,20 @@ module  multiplier(
 	parameter SHIFT = 3'b100;
 	parameter DONE = 3'b101;
 	
-	//reg type
+	/////////reg type///////
 	reg [2:0] state, next;
-	reg [63:0] counter;
-	 
+	reg [63:0] counter; 
 	reg [63:0]  REG_multiplier;
 	reg [63:0]  REG_multiplicand;
 	reg [128:0] REG_result;
 	 
-	//wire type 
+	///////wire type ////////
 	wire [63:0] w_add, w_sub;
 	wire        w_add_cout, w_sub_cout;
 	wire [63:0] w_counter_sub;
 	wire        w_counter_cout;
 	
-	//Reaction whenever reset and clk change
+	///////Reaction whenever reset and clk change///////
 	always @(posedge clk, negedge reset_n)
 	begin
 		 if(!reset_n) state <= IDLE;
@@ -105,7 +104,7 @@ module  multiplier(
 		end
 	end
  
-	//counter 
+	/////////////counter ////////////
 	always @(posedge clk, negedge reset_n)
 	begin
 		 if(!reset_n) counter <= 64'h8000_0000_0000_0000;
@@ -116,11 +115,11 @@ module  multiplier(
 		 end
 	end
 	
-	//assign
+	////////////assign//////////////
 	assign result  = REG_result[128:1];
 	assign op_done = (state == DONE);
 
-	//cla instance
+	//////////cla instance///////////
 	cla64 sub( .a(REG_result[128:65]), .b(~REG_multiplicand), .ci(1'b1), .s(w_sub), .co(w_sub_cout));
 	 
 	cla64 add( .a(REG_result[128:65]), .b(REG_multiplicand), .ci(1'b0), .s(w_add), .co(w_add_cout));
