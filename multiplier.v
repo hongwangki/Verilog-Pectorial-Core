@@ -1,4 +1,4 @@
-module  multiplier(clk,reset_n,multiplier,multiplicand,op_start,op_clear,op_done,result);
+module multiplier(clk,reset_n,multiplier,multiplicand,op_start,op_clear,op_done,result);
     
 	 //////input///////
 	 input clk, reset_n;

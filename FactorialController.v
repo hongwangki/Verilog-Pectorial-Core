@@ -30,20 +30,12 @@ module FactorialController (clk,reset_n,s_sel,s_wr,s_addr,s_din,OD,RH,RL,OS,OI,O
    always @(posedge clk or negedge reset_n) begin
     //reset==0
     if(~reset_n) begin
-        opstart <= 64'h0;
-        opclear <= 64'h0;
-        intrEn <= 64'h0;
-        operand <= 64'h0;
-        s_dout <= 64'h0;
+      {opstart, opclear, intrEn, operand, s_dout} <= 64'h0;
     end
     //opclear==0
     else begin
         if(OC) begin
-            opstart <= 64'h0;
-            opclear <= 64'h0;
-            intrEn <= 64'h0;
-            operand <= 64'h0;
-            s_dout <= 64'h0;
+         {opstart, opclear, intrEn, operand, s_dout} <= 64'h0;
         end
         
         else begin
