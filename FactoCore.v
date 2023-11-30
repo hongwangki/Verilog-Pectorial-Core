@@ -73,7 +73,7 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
        //all 0 (but special case ==1)
        else if(opclear)begin
             {multiplier, multiplicand, result_h, RH,OPR} <= 64'h0;
-           {opdone, clear} <= 3'b00;
+            {opdone, clear} <= 3'b00;
            //special case
             result_l <= 64'h1;
             RL <= 64'h1;

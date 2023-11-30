@@ -1,10 +1,10 @@
 module ram (clk,cen,wen,s_addr,s_din,s_dout);
-  ////////input//////////
-  input clk, cen, wen;
-  input [7:0] s_addr;
+ 	 ////////input//////////
+    input clk, cen, wen;
+    input [7:0] s_addr;
 	input [63:0] s_din;
-  /////////output//////////
-  output reg [63:0] s_dout;
+ 	 /////////output//////////
+    output reg [63:0] s_dout;
 
 	//63 bit memory 255 save
 	reg [63:0] memory [0:255];

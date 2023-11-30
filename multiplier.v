@@ -1,130 +1,124 @@
-module multiplier(clk,reset_n,multiplier,multiplicand,op_start,op_clear,op_done,result);
+module  multiplier(clk,reset_n,multiplier,multiplicand,op_start,op_clear,op_done,result);
     
-	 //////input///////
-	 input clk, reset_n;
+    //////input///////
+    input clk, reset_n;
+	 input op_start, op_clear;
     input [63:0] multiplier, multiplicand;
-    input op_start, op_clear;
     //////output//////
-	 output op_done;
+    output op_done;
     output [127:0] result;
 
    /////////parameter///////
    parameter IDLE = 3'b000;
-   parameter OP_START = 3'b001;
+   parameter OPSTART = 3'b001;
    parameter JUDGE = 3'b010;
    parameter ADD = 3'b011;
    parameter SHIFT = 3'b100;
    parameter DONE = 3'b101;
    
-   /////////reg type///////
-   reg [2:0] state, next;
-   reg [63:0] counter; 
-   reg [63:0]  REG_multiplier;
-   reg [63:0]  REG_multiplicand;
-   reg [128:0] REG_result;
-    
    ///////wire type ////////
-   wire [63:0] w_add, w_sub;
-   wire        w_add_cout, w_sub_cout;
+	wire C_add, C_sub;
+   wire [63:0] SumAdd, SumSub;
+	
+	/////////reg type///////
+   reg [2:0] state, next;
+   reg [63:0]  R_multiplier, R_multiplicand, counter;
+   reg [128:0] R_result;
+    
+   /*
    wire [63:0] w_counter_sub;
    wire        w_counter_cout;
+	*/
    
    ///////Reaction whenever reset and clk change///////
    always @(posedge clk, negedge reset_n)
    begin
        if(!reset_n) state <= IDLE;
-       else begin
-         if(op_clear) state <= IDLE;//op_clear==1 => state= IDEL
-         else state  <= next;
-       end
+       else state <= (!op_clear) ? next : IDLE;
    end
 ////////////next state///////////////
-   always @(*)
-   begin
-      case(state) 
-           //IDLE Next State Condition
-           IDLE : begin
-            if(reset_n && op_start && !op_clear) next = OP_START;
-              else next = IDLE;
-            end
-           //OP_START Next State Condition
-           OP_START : next = JUDGE;
-           //JUDGE Next State Condition
-           JUDGE : begin 
-            if(REG_result[1]^REG_result[0]) next = ADD;
-            else next = SHIFT;
-            end
-           //ADD Next State Condition
-           ADD :  next = SHIFT;
-           //SHIFT Next State Condition
-           SHIFT    : begin
-            if(counter == 64'b1) next = DONE;
-            else next = JUDGE;
-            end
-           //DONE Next State Condition          
-           DONE : next = IDLE;
-      endcase 
-   end
+	 always @(*) begin
+		 case (state)
+			  //IDLE Next State Condition
+			  IDLE:   next = (reset_n && op_start && !op_clear) ? OPSTART : IDLE;
+			  //OP_START Next State Condition
+			  OPSTART:  next = JUDGE;
+			  //JUDGE Next State Condition
+			  JUDGE:  next = (R_result[1] ^ R_result[0]) ? ADD : SHIFT;
+			  //ADD Next State Condition
+			  ADD:    next = SHIFT;
+			  //SHIFT Next State Condition
+			  SHIFT:  next = (counter == 64'b1) ? DONE : JUDGE;
+			  //DONE Next State Condition 
+			  DONE:   next = IDLE;
+		 endcase
+	end
+ 
  
    //////////////os result//////////////// 
    always @(posedge clk, negedge reset_n)
    begin
-      if(!reset_n) REG_result  <= 129'b0;
+      if(!reset_n) R_result  <= 129'b0;
       //State-based result definition
       else begin
-         if(op_clear) REG_result  <= 129'b0;
-         //64b'0 connect 64b multiplier connect 1'b0 =129b result
-         else if(state == OP_START) REG_result  <= { 64'b0,  multiplier, 1'b0 };
-         //1bit right shift 
-         else if(state == SHIFT) REG_result  <= {REG_result[128], REG_result[128:1] }; 
-         // sub cla result[128:65] connect REG reuslt [64:0]
-         else if(state == ADD && (REG_result[0]==1'b0)) REG_result  <= {w_sub, REG_result[64:0]};
-         //ADD cla result[128:65] connect REG reuslt [64:0] 
-         else if(state == ADD && (REG_result[0]==1'b1)) REG_result  <= {w_add, REG_result[64:0]};
-         else REG_result <= REG_result;
-      end
-   end
- 
-   //////////// multiplier ///////////////
-   always @(posedge clk, negedge reset_n)
-   begin
-      if(!reset_n) REG_multiplier <= 64'b0;
-      else begin
-         if(op_clear) REG_multiplier  <= 64'b0; //multiplier clear
-         else if(state == OP_START) REG_multiplier  <= multiplier;
-         else REG_multiplier  <= REG_multiplier;
-      end
+			//opclear=1 case
+			if (op_clear) R_result <= 129'b0;
+		   else begin
+			  case (state)
+			    //OPSTART State Output
+				 OPSTART: R_result <= { 64'b0, multiplier, 1'b0 }; //129but r_result
+				 //Shift State Output
+				 SHIFT: R_result <= { R_result[128], R_result[128:1] }; //shift
+				 
+				 //ADD State Output
+				 //result[0]==0 connect SumSub, R_result[64:0],
+				 //result[0]!=0 connect SumAdd, R_result[64:0]
+				 ADD: R_result <= (R_result[0] == 1'b0) ? {SumSub, R_result[64:0]} : {SumAdd, R_result[64:0]};
+
+				 default: R_result <= R_result;
+				endcase
+			 end
+		end
    end
 
-   /////////// multiplicand ////////////
-   always @(posedge clk, negedge reset_n)
-   begin
-      if(!reset_n) REG_multiplicand  <= 64'b0;
-      else begin
-         if(op_clear) REG_multiplicand  <= 64'b0; //multiplicand clear
-         else if(state == OP_START) REG_multiplicand  <= multiplicand;
-         else REG_multiplicand  <= REG_multiplicand;
-      end
-   end
- 
-   /////////////counter ////////////
+	
+   /////////////counter /////////////
    always @(posedge clk, negedge reset_n)
    begin
        if(!reset_n) counter <= 64'h8000_0000_0000_0000;
        else begin
          if(op_clear) counter <= 64'h8000_0000_0000_0000;
-         else if(state == SHIFT) counter <= {1'b0, counter[63:1]};
-         else counter <= counter;
+         else  counter <= (state == SHIFT) ? {1'b0, counter[63:1]} : counter;
        end
    end
+	
+	
+ ////////multplier, multiplicand copy////////////
+   always @(posedge clk, negedge reset_n) begin
+    if (!reset_n) {R_multiplier, R_multiplicand} <= 64'b0;
+    
+	 else begin
+		  //opclear==1 case
+        if (op_clear) {R_multiplier, R_multiplicand} <= 64'b0;
+
+		  //opstart==1case
+        else if (state == OPSTART) {R_multiplier, R_multiplicand} <= {multiplier, multiplicand};
+        
+		  //else case
+		  else  {R_multiplier, R_multiplicand} <= {R_multiplier, R_multiplicand};
+     end
+	end
+
    
-   ////////////assign//////////////
-   assign result  = REG_result[128:1];
-   assign op_done = (state == DONE);
 
    //////////cla instance///////////
-   cla64 sub( .a(REG_result[128:65]), .b(~REG_multiplicand), .ci(1'b1), .s(w_sub), .co(w_sub_cout));
+   cla64 sub( .a(R_result[128:65]), .b(~R_multiplicand), .ci(1'b1), .s(SumSub), .co(C_sub));
     
-   cla64 add( .a(REG_result[128:65]), .b(REG_multiplicand), .ci(1'b0), .s(w_add), .co(w_add_cout));
+   cla64 add( .a(R_result[128:65]), .b(R_multiplicand), .ci(1'b0), .s(SumAdd), .co(C_add));
+	
+	
+	////////////assign//////////////
+   assign result  = R_result[128:1];
+   assign op_done = (state == DONE);
  
 endmodule
