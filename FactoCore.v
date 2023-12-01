@@ -111,12 +111,6 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
        end
 end
 
-///////////assign////////////
-   //assign interrupt
-   assign interrupt = intrEn & opdone[0];
-   
-   
-   
       ///////////FactorialController instance////////////////
    FactorialController U0_FactorialController (.clk(clk), .reset_n(reset_n), .s_sel(s_sel),
                       .s_wr(s_wr), .s_addr(s_addr), .s_din(s_din), .OD(opdone),
@@ -126,6 +120,8 @@ end
    /////////////multiplier instance//////////
    multiplier U1_multiplier (.clk(clk), .reset_n(reset_n), .multiplier(multiplier), .multiplicand(multiplicand), 
                               .op_start(opstart), .op_clear(opclear|clear), .op_done(done), .result(result));
-
+   
+   ///////////assign////////////
+   assign interrupt = intrEn & opdone[0];
 endmodule
 
