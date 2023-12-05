@@ -43,7 +43,7 @@ begin
 	 #100
     m_req = 1'b1;
     m_wr = 1'b1;
-	 m_dout = 64'd7;
+	 m_dout = 64'd20;
     m_addr = 16'h7020;
 	 
 	 //intrEn
@@ -62,7 +62,7 @@ begin
 	 #10
 	 opdone = m_din;
 	
-	 #8000 //facttorial deley
+	 #800000 //facttorial deley
     opdone = m_din;
 	 
 	 //result_h WRITE AND READ

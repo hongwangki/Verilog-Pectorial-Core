@@ -36,7 +36,7 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
        else state <= next_state;
    end
 
-///////////next state////////////
+	/////////next state//////////
    always @ (*)
    begin
      //reset==0 or opcler==1 => next state=IDEL
@@ -62,7 +62,7 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
    begin 
          //all 0 (but special case ==1)
         if (~reset_n) begin
-           {multiplier, multiplicand, result_h, RH,OPR} <= 64'h0;
+           {multiplier, multiplicand, result_h, RH,OPR} <= 256'h0;
            {opdone, clear} <= 3'b00;
            //special case
             result_l <= 64'h1;
@@ -72,8 +72,8 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
        //opclear==0
        //all 0 (but special case ==1)
        else if(opclear)begin
-            {multiplier, multiplicand, result_h, RH,OPR} <= 64'h0;
-            {opdone, clear} <= 3'b00;
+            {multiplier, multiplicand, result_h, RH,OPR} <= 256'h0;
+           {opdone, clear} <= 3'b00;
            //special case
             result_l <= 64'h1;
             RL <= 64'h1;
@@ -89,29 +89,31 @@ module FactoCore (clk,reset_n,s_sel,s_wr,s_addr,s_din,s_dout,interrupt);
                
                START : opdone <= 2'b10;
                
-               PROGRESS : begin
+					 PROGRESS : begin
                 if (done) begin
                   //(1) proceeding in a way
-                  {clear, result_h, result_l, OPR} <= {1'b1, result[127:64], result[63:0], OPR - 1};
+						//if done set operand-=1 and restart
+                  { clear,result_h, result_l, OPR} <= {1'b1, result[127:64], result[63:0], OPR - 1};
                 end 
             
                else begin
                   //(1) proceeding in a way
-                  {clear, multiplier, multiplicand} <= {1'b0, OPR, (result_l == 64'h0) ? result_h : result_l};
+                  {clear,multiplier, multiplicand} <= {1'b0, OPR, (result_l == 64'h0) ? result_h : result_l};
                   end
                end
             
               END : begin
                   //(1) proceeding in a way
-                  {RH, RL, opdone} <= {result_h, result_l, 2'b11};
+						//copy reg and opdine=11(end setting)
+                  {RH, RL, opdone} <= { result_h, result_l, 2'b11};
                end
                
             default : ;
           endcase
        end
-end
-
-      ///////////FactorialController instance////////////////
+end  
+   
+   ///////////FactorialController instance////////////////
    FactorialController U0_FactorialController (.clk(clk), .reset_n(reset_n), .s_sel(s_sel),
                       .s_wr(s_wr), .s_addr(s_addr), .s_din(s_din), .OD(opdone),
                       .RH(RH), .RL(RL), .OS(opstart),
@@ -120,8 +122,7 @@ end
    /////////////multiplier instance//////////
    multiplier U1_multiplier (.clk(clk), .reset_n(reset_n), .multiplier(multiplier), .multiplicand(multiplicand), 
                               .op_start(opstart), .op_clear(opclear|clear), .op_done(done), .result(result));
-   
-   ///////////assign////////////
+		
+	///////////assign////////////
    assign interrupt = intrEn & opdone[0];
 endmodule
-

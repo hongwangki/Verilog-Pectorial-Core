@@ -1,10 +1,13 @@
 module bus_addr(s_addr, m_req, s0_sel, s1_sel);
+	//input
 	input m_req;
 	input [15:0] s_addr;
+	//output reg
 	output reg s0_sel, s1_sel;
 	
 	always @(*)
 	begin
+		 //Sel change according to address
 		 if (m_req) begin
 			  if (s_addr >= 16'h0000 && s_addr <= 16'h07FF) begin
 					s0_sel = 1'b1;

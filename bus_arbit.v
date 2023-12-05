@@ -1,8 +1,8 @@
 module bus_arbit (clk,reset_n,m_req,m_grant);
-  
-   input clk;
-   input reset_n;
-   input m_req;
+   
+	//input
+   input clk,reset_n,m_req;
+	//output reg
    output reg m_grant;
 
 
@@ -34,6 +34,7 @@ module bus_arbit (clk,reset_n,m_req,m_grant);
 // Output logic
 	always @(posedge clk or negedge reset_n)
 	begin
+		//grant set case
 	  if (~reset_n)
 		 m_grant <= 0;
 	  else begin
@@ -45,4 +46,4 @@ module bus_arbit (clk,reset_n,m_req,m_grant);
 				 m_grant <= 1'bx;
 			end	 				 
 	end
-	endmodule
+endmodule
